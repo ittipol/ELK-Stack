@@ -23,19 +23,19 @@ discovery.type=single-node
 - Field type https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
 - Built-in analyzer reference https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html
 
-``` json
+``` javascript
 // users mean index name
 PUT users
 {
   "mappings": {
     "properties": {
       "title_eng": {
-        "type": "text", # Field type
-        "analyzer": "standard" # Built-in analyzer (preset)
+        "type": "text", // Field type
+        "analyzer": "standard" // Built-in analyzer (preset)
       },
       "title_thai": {
-        "type": "text", # Field type
-        "analyzer": "thai" # Built-in analyzer (preset)
+        "type": "text", // Field type
+        "analyzer": "thai" // Built-in analyzer (preset)
       }
     }
   }
@@ -47,8 +47,9 @@ PUT users
 - Tokenizer reference https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenizers.html
 - Token filter reference https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenfilters.html
 
-``` json
-PUT my-index-000001
+``` javascript
+// Create index
+PUT users
 {
   "settings": {
     "analysis": {
@@ -63,23 +64,50 @@ PUT my-index-000001
             "lowercase",
             "asciifolding"
           ]
+        },
+        "hobbie_analyzer": {
+          "type": "custom", 
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "detail_analyzer": {
+          "type": "custom", 
+          "tokenizer": "thai",
+          "char_filter": [
+            "html_strip"
+          ]
         }
       }
     }
   },
   "mappings": {
     "properties": {
-      "hobbies": {
+      "name": {
         "type": "text",
         "analyzer": "my_custom_analyzer"
+      },
+      "hobbies": {
+        "type": "text",
+        "analyzer": "hobbie_analyzer"
+      },
+      "detail": {
+        "type": "text",
+        "analyzer": "detail_analyzer"
       }
     }
   }
 }
 ```
 
+### Delete index
+``` javascript
+DELETE users
+```
+
 ### Create data
-``` json
+``` javascript
 // 1 mean id
 POST /customer/_doc/1
 {
@@ -95,7 +123,7 @@ POST /customer/_create/1
 ```
 
 ### Update data
-``` json
+``` javascript
 // 1 mean id
 POST /customer/_doc/1
 {
@@ -105,20 +133,20 @@ POST /customer/_doc/1
 ```
 
 ### Deletr data
-``` json
+``` javascript
 // 1 mean id
 DELETE /customer/_doc/1
 ```
 
 ### Get document
-``` json
+``` javascript
 // 1 mean id
 GET /customer/_doc/1
 ```
 
 ### Bulk insert
 - NDJSON http://ndjson.org/
-``` json
+``` javascript
 # data must be newline-delimited JSON (NDJSON). Each line must end in a newline character (\n), including the last line.
 PUT customer/_bulk
 { "create": { "_id": 10 } }
@@ -133,7 +161,7 @@ PUT customer/_bulk
 ```
 
 ### Search data
-``` json
+``` javascript
 // Full-text search
 GET customer/_search
 {
@@ -148,7 +176,7 @@ GET customer/_search
 
 ### Language analyzers
 - https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html
-``` json
+``` javascript
 // Thai tokenizer
 POST _analyze
 {
