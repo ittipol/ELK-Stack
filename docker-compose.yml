@@ -11,7 +11,7 @@ services:
       - 9200:9200
       - 9300:9300
     volumes:
-      - ./data:/usr/share/elasticsearch/data
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
 
   kibana:
     container_name: kibana
@@ -20,6 +20,19 @@ services:
       - elasticsearch.hosts=http://elasticsearch:9200
     ports:
       - 5601:5601
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:8.7.1
+    environment:
+      - config.reload.automatic=true
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/logstash:/usr/share/logstash/data
+      - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./config/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     
   # curl:
   #   image: curlimages/curl:8.00.1

@@ -17,6 +17,10 @@ discovery.type=single-node
 - Download images https://www.docker.elastic.co/r/kibana
 - Configure settings https://www.elastic.co/guide/en/kibana/current/settings.html
 
+## Logstash
+- Download images https://www.docker.elastic.co/r/logstash
+- Configure settings https://www.elastic.co/guide/en/logstash/current/index.html
+
 ## Elasticsearch commands
 
 ### Create index (index same as table)
@@ -48,7 +52,7 @@ PUT users
 - Token filter reference https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenfilters.html
 
 ``` javascript
-// Create index
+// Create index with custom analyzer 
 PUT users
 {
   "settings": {
@@ -101,9 +105,65 @@ PUT users
 }
 ```
 
+``` javascript
+// Create index
+PUT programs
+{
+  "mappings": {
+    "properties": {
+      "lists": {
+        "properties": {
+          "description": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "message": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "tags": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 ### Delete index
 ``` javascript
 DELETE users
+```
+
+### List index
+``` javascript
+GET _cat/indices
 ```
 
 ### Create data
@@ -147,7 +207,7 @@ GET /customer/_doc/1
 ### Bulk insert
 - NDJSON http://ndjson.org/
 ``` javascript
-# data must be newline-delimited JSON (NDJSON). Each line must end in a newline character (\n), including the last line.
+// data must be newline-delimited JSON (NDJSON). Each line must end in a newline character (\n), including the last line.
 PUT customer/_bulk
 { "create": { "_id": 10 } }
 { "firstname": "AAA","lastname":"BBB"}
@@ -158,6 +218,45 @@ PUT customer/_bulk
 { "create": { "_id": 13 } }
 { "firstname": "GGG","lastname":"HHH"}
 
+```
+
+### Arrays
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html
+``` javascript
+PUT programs/_doc/1
+{
+  "message": "some arrays in this document",
+  "tags":  [ "data_1", "data_2" ], 
+  "lists": [ 
+    {
+      "name": "list_1",
+      "description": "list desc"
+    },
+    {
+      "name": "list_2",
+      "description": "list desc"
+    }
+  ]
+}
+
+PUT programs/_doc/2 
+{
+  "message": "no arrays in this document",
+  "tags":  "data_1",
+  "lists": {
+    "name": "list_1",
+    "description": "list desc"
+  }
+}
+
+GET programs/_search
+{
+  "query": {
+    "match": {
+      "tags": "data_1" 
+    }
+  }
+}
 ```
 
 ### Search data
@@ -184,3 +283,27 @@ POST _analyze
   "text": "CORS เป็นกลไกที่ web browser ใช้เวลาที่ client ส่ง request ไปยัง server ที่มี domain ต่างกัน"
 }
 ```
+
+## Logstash
+
+### Input
+``` javascript
+input {
+  http {
+    port => 8080
+  }
+}
+```
+
+### Filter
+``` javascript
+
+```
+
+### Output
+``` javascript
+
+```
+
+VSCode Extensions
+- Logstash Editor
