@@ -21,6 +21,9 @@ discovery.type=single-node
 - Download images https://www.docker.elastic.co/r/logstash
 - Configure settings https://www.elastic.co/guide/en/logstash/current/index.html
 
+## Kibana Dev Tools
+http://localhost:5601/app/dev_tools#/console
+
 ## Elasticsearch commands
 
 ### Create index (index same as table)
@@ -53,7 +56,7 @@ PUT users
 
 ``` javascript
 // Create index with custom analyzer 
-PUT users
+PUT logs
 {
   "settings": {
     "analysis": {
@@ -69,7 +72,7 @@ PUT users
             "asciifolding"
           ]
         },
-        "hobbie_analyzer": {
+        "type_analyzer": {
           "type": "custom", 
           "tokenizer": "standard",
           "filter": [
@@ -92,9 +95,9 @@ PUT users
         "type": "text",
         "analyzer": "my_custom_analyzer"
       },
-      "hobbies": {
+      "type": {
         "type": "text",
-        "analyzer": "hobbie_analyzer"
+        "analyzer": "type_analyzer"
       },
       "detail": {
         "type": "text",
@@ -107,7 +110,7 @@ PUT users
 
 ``` javascript
 // Create index
-PUT programs
+PUT activity
 {
   "mappings": {
     "properties": {
@@ -166,6 +169,12 @@ DELETE users
 GET _cat/indices
 ```
 
+### View index fields
+``` javascript
+// recipes mean index name
+GET recipes/_mapping
+```
+
 ### Create data
 ``` javascript
 // 1 mean id
@@ -192,7 +201,7 @@ POST /customer/_doc/1
 }
 ```
 
-### Deletr data
+### Delete data
 ``` javascript
 // 1 mean id
 DELETE /customer/_doc/1
@@ -223,7 +232,8 @@ PUT customer/_bulk
 ### Arrays
 - https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html
 ``` javascript
-PUT programs/_doc/1
+// 1 mean id
+PUT activity/_doc/1
 {
   "message": "some arrays in this document",
   "tags":  [ "data_1", "data_2" ], 
@@ -239,7 +249,8 @@ PUT programs/_doc/1
   ]
 }
 
-PUT programs/_doc/2 
+// 2 mean id
+PUT activity/_doc/2 
 {
   "message": "no arrays in this document",
   "tags":  "data_1",
@@ -249,7 +260,8 @@ PUT programs/_doc/2
   }
 }
 
-GET programs/_search
+// search
+GET activity/_search
 {
   "query": {
     "match": {
@@ -259,13 +271,787 @@ GET programs/_search
 }
 ```
 
-### Search data
+### Search options
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html
 ``` javascript
-// Full-text search
-GET customer/_search
+// Size
+GET recipes/_search
 {
-  "query" : {
-    "match" : { "firstname": "Name" }
+  "size": 5
+}
+
+// Source (same as select command in sql)
+GET recipes/_search
+{
+  "_source": ["title", "description", "ingredients.name"]
+}
+
+// Source excludes
+GET recipes/_search
+{
+  "_source": {
+    "excludes": ["description","servings","ratings"]
+  }
+}
+
+// Pagination
+GET recipes/_search
+{
+  "_source": false,
+  "size": 5,
+  "from": 6
+}
+
+// Sort
+GET recipes/_search
+{
+  "_source": ["title","ingredients.name","steps"],
+  "sort": [
+    {
+      "title.keyword": {
+        "order": "asc"
+      }
+    },
+    {
+      "preparation_time_minutes": {
+        "order": "desc"
+      }
+    }
+  ]
+}
+```
+
+### Searching score explanation
+``` javascript
+GET products/_search
+{
+  "query": {
+    "term": {
+      "name": {
+        "value": "tea"
+      }
+    }
+  },
+  "_source": ["name"], 
+  "explain": true // display score explanation
+}
+```
+
+### Match search
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "match": {
+      "title": "Cheese"
+    }
+  },
+  "_source": ["title","description"]
+}
+
+GET recipes/_search
+{
+  "query": {
+    "match": {
+      "ingredients.name": "cheese"
+    }
+  },
+  "_source": ["title","description"]
+}
+```
+
+### Keyword search
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "match": {
+      "title.keyword": "Stovetop Macaroni and Cheese"
+    }
+  },
+  "_source": ["title","description"]
+}
+```
+
+### Term search
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "term": {
+      "title": "stovetop"
+    }
+  },
+  "_source": ["title","description"]
+}
+
+GET products/_search
+{
+  "query": {
+    "term": {
+      "name": {
+        "value": "tea"
+      }
+    }
+  }
+}
+```
+### Search with id
+``` javascript
+GET products/_search
+{
+  "query": {
+    "ids": {
+      "values": ["1","2","3","20","30"]
+    }
+  }
+}
+```
+
+### Search with multiple terms
+``` javascript
+GET products/_search
+{
+  "_source": ["tags"],
+  "query": {
+    "terms": { // terms
+      "tags.keyword": [
+        "Coffee",
+        "Energy drink"
+      ]
+    }
+  }
+}
+```
+
+### Search range values
+- [Range query](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/query-dsl-range-query.html)
+``` javascript
+GET products/_search
+{
+  "query": {
+    "range": {
+      "in_stock": {
+        "gte": 10,
+        "lte": 50
+      }
+    }
+  },
+  "_source": ["name","in_stock"]
+}
+```
+
+### Search with date range
+- [Date Format](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/mapping-date-format.html)
+``` javascript
+GET products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "01/01/2004",
+        "lte": "01/12/2005",
+        "format": "dd/MM/yyyy" // set date format
+      }
+    }
+  },
+  "_source": ["name","in_stock","created"]
+}
+```
+
+### Date math
+- [Date Math](https://www.elastic.co/guide/en/elasticsearch/reference/8.8/common-options.html#date-math)
+> +1h: Add one hour<br>
+> -1d: Subtract one day
+``` javascript
+// Subtract one month
+GET products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "01/01/2004||-1M", // Subtract one month
+        "format": "dd/MM/yyyy"
+      }
+    }
+  },
+  "_source": ["name","in_stock","created"]
+}
+
+// Now and subtract 20 year
+GET products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "now-20y", // now and Subtract 20 year
+        "format": "dd/MM/yyyy"
+      }
+    }
+  },
+  "_source": ["name","in_stock","created"]
+}
+```
+
+### Round down to the nearest day
+> /d mean start at 00:00:00 time of day<br>
+> /m mean start at 1st day of month<br>
+> /y mean start at 1st month of year<br>
+``` javascript
+// now/m/d-20y => 01/{month_now}/{year_now-20} 00:00:00
+GET products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "now/m/d-20y", // or "now-20y/m/d"
+        "format": "dd/MM/yyyy"
+      }
+    }
+  },
+  "_source": ["name","in_stock","created"]
+}
+```
+
+### Search with non null value
+``` javascript
+GET products/_search
+{
+  "query": {
+    "exists": {
+      "field": "tags"
+    }
+  }
+}
+```
+
+### Search with null value
+``` javascript
+GET products/_search
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "exists": {
+            "field": "tags"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### Search with prefix
+``` javascript
+GET products/_search
+{
+  "query": {
+    "prefix": {
+      "tags.keyword": {
+        "value": "Energy"
+      }
+    }
+  }
+}
+```
+
+### Search with wildcard
+> \* Represents zero or more characters<br>
+> ? Represents a single character
+``` javascript
+// *drink
+GET products/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": {
+        "value": "*drink"
+      }
+    }
+  }
+}
+
+// Energy*
+GET products/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": {
+        "value": "Energy*"
+      }
+    }
+  }
+}
+
+// En??gy*
+GET products/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": {
+        "value": "En??gy*"
+      }
+    }
+  }
+}
+```
+
+### Search with Regular Expression
+- https://regex101.com/
+``` javascript
+GET products/_search
+{
+  "query": {
+    "regexp": {
+      "tags.keyword": "[Ee][\\w]+\\s(drink)"
+    }
+  }
+}
+```
+
+### Full-text search
+``` javascript
+// OR operator 
+GET recipes/_search
+{
+  "query": {
+    "match": {
+      "title": "Mushrooms Spinach"
+    }
+  }
+}
+
+// AND operator
+GET recipes/_search
+{
+  "query": {
+    "match": {
+      "title": {
+        "query": "Mushrooms Spinach",
+        "operator": "and"
+      }
+    }
+  },
+  "_source": ["title"]
+}
+```
+
+### Matching phrases
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": "Spinach, and Mushrooms"
+    }
+  }
+}
+```
+
+### Multi-match search
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "olive oil",
+      "operator": "and", 
+      "fields": ["title","description"]
+    }
+  },
+  "_source": ["title","description"]
+}
+```
+
+### Must & Must not & Should & Filter search
+``` javascript
+GET recipes/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "multi_match": {
+            "query": "Spaghetti",
+            "fields": ["title", "description"]
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "step": {
+              "query": "chili pepper cheese",
+              "operator": "and"
+            }
+          }
+        }
+      ],
+      "should": [
+        {
+          "match_phrase": {
+            "ingredients.name": "olive oil"
+          }
+        }
+      ], 
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 30
+            }
+          }
+        },
+        {
+          "range": {
+            "servings.min": {
+              "gte": 2,
+              "lte": 4
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### Display matched queries name
+``` javascript
+// Set name for each query
+GET recipes/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "multi_match": {
+            "query": "Spaghetti",
+            "fields": ["title", "description"],
+            "_name": "must_multi_match" // set name
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "step": {
+              "query": "chili pepper cheese",
+              "operator": "and",
+              "_name": "must_not_match" // set name
+            }
+          }
+        }
+      ],
+      "should": [
+        {
+          "match_phrase": {
+            "ingredients.name": {
+              "query": "olive oil",
+              "_name": "should_match_phrase" // set name
+            }
+          }
+        }
+      ], 
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 30,
+              "_name": "filter_range_preparation_time_minutes" // set name
+            }
+          }
+        },
+        {
+          "range": {
+            "servings.min": {
+              "gte": 2,
+              "lte": 4,
+              "_name": "filter_range_servings_min" // set name
+            }
+          }
+        }
+      ]
+    }
+  },
+  "_source": ["title", "ingredients.name"]
+}
+```
+
+### Aggregation
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html#search-aggregations
+
+### Metrics aggregations
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+
+### Sum
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "sum_of_total_amount": {
+      "sum": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Avg
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "avg_of_total_amount": {
+      "avg": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Min
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "min_of_total_amount": {
+      "min": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Max
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "max_of_total_amount": {
+      "max": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Cardinality
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-cardinality-aggregation.html
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "salesman_count": {
+      "cardinality": {
+        "field": "salesman.id"
+      }
+    }
+  }
+}
+```
+
+### Value count
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-valuecount-aggregation.html
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "salesman_count": {
+      "value_count": {
+        "field": "salesman.id"
+      }
+    }
+  }
+}
+```
+
+Stats aggregation
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_amount_stats": {
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Bucket aggregations
+- https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html#search-aggregations-bucket
+
+### Terms (Grouping)
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status.keyword",
+        "size": 20 // number of displaying term
+      }
+    }
+  }
+}
+```
+
+### Search & Grouping stats
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "range": {
+            "total_amount": {
+              "gte": 50,
+              "lt": 200
+            }
+          }
+        },
+        {
+          "range": {
+            "purchased_at": {
+              "lte": "01/05/2016",
+              "format": "dd/MM/yyyy"
+            }
+          }
+        }
+      ]
+    }
+  }, 
+  "aggs": {
+    "status_terms": { // create term
+      "terms": {
+        "field": "status.keyword",
+        "size": 20
+      },
+      "aggs": { // in term
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    },
+    "all_order": { // not in term
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+```
+
+### Filter
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "filter_total_amount": {
+      "filter": {
+        "range": {
+          "total_amount": {
+            "gte": 200,
+            "lte": 400
+          }
+        }
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Filters (Custom buckets)
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "query": {
+    "match": {
+      "status": "completed cancelled"
+    }
+  }, 
+  "aggs": {
+    "order_statuses": {
+      "filters": {
+        "other_bucket_key": "other_status", 
+        "filters": {
+          "processed": {
+            "match": {
+              "status.keyword": "processed"
+            }
+          },
+          "completed": {
+            "match": {
+              "status.keyword": "completed"
+            }
+          }
+        }
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Range (Group by range)
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_amount": {
+      "range": {
+        "field": "total_amount",
+        "ranges": [
+          { "to": 100 }, // mean ... to 99 (< 100)
+          { "from": 100, "to": 200 }, // mean 100 to 199 (100 >= x < 200)
+          { "from": 200 } // mean 200 to ... (200 >=)
+        ]
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
   }
 }
 ```
@@ -284,7 +1070,7 @@ POST _analyze
 }
 ```
 
-## Logstash
+## Logstash pipeline
 
 ### Input
 ``` javascript
