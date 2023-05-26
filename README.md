@@ -495,16 +495,20 @@ GET products/_search
 
 ### Round down to the nearest day
 > /d mean start at 00:00:00 time of day<br>
-> /m mean start at 1st day of month<br>
-> /y mean start at 1st month of year<br>
+> /M mean start at 1st day of month at 00:00:00 time<br>
+> /y mean start at 1st day and 1st month of year at 00:00:00 time<br>
 ``` javascript
-// now/m/d-20y => 01/{month_now}/{year_now-20} 00:00:00
+// now = 26/05/2023 07:59:18
+// now-1y/d => 26/05/2022 00:00:00
+// now-1y/M => 01/05/2022 00:00:00
+// now-1y/y => 01/01/2022 00:00:00
+
 GET products/_search
 {
   "query": {
     "range": {
       "created": {
-        "gte": "now/m/d-20y", // or "now-20y/m/d"
+        "gte": "now/M-20y", // or "now-20y/M"
         "format": "dd/MM/yyyy"
       }
     }
@@ -878,7 +882,7 @@ GET orders/_search
 }
 ```
 
-Stats aggregation
+### Stats aggregation
 - https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
 ``` javascript
 GET orders/_search
@@ -1039,10 +1043,124 @@ GET orders/_search
       "range": {
         "field": "total_amount",
         "ranges": [
-          { "to": 100 }, // mean ... to 99 (< 100)
+          { "to": 100 }, // mean x... to 99 (< 100)
           { "from": 100, "to": 200 }, // mean 100 to 199 (100 >= x < 200)
-          { "from": 200 } // mean 200 to ... (200 >=)
+          { "from": 200 } // mean 200 to ...x (200 >=)
         ]
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Date range (Group by date)
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_at_date_range": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "dd/MM/yyyy HH:mm:ss",
+        "keyed": true, 
+        "ranges": [
+          {
+            "from": "01/01/2016 00:00:00",
+            "to": "01/01/2016 00:00:00||+6M",
+            "key": "first_half_year"
+          },
+          {
+            "from": "01/01/2016 00:00:00||+6M",
+            "to": "01/01/2016 00:00:00||+12M",
+            "key": "second_half_year"
+          },
+          {
+            "from": "01/01/2016 00:00:00||+12M",
+            "to": "now/d"
+          }
+        ]
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Histogram
+- https://www.elastic.co/guide/en/elasticsearch/reference/8.7/search-aggregations-bucket-histogram-aggregation.html
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_amount_histogram": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25,
+        "keyed": true,
+        "min_doc_count": 1
+      }
+    }
+  }
+}
+```
+
+### Date histogram
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_at_date_histogram": {
+      "date_histogram": {
+        "field": "purchased_at",
+        "format": "dd/MM/yyyy HH:ss:mm", 
+        "calendar_interval": "quarter",
+        //"fixed_interval": "30d",
+        "keyed": true,
+        "missing": "01/01/2000 00:00:00"
+      },
+      "aggs": {
+        "total_amount_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Date histogram aggregation
+- https://www.elastic.co/guide/en/elasticsearch/reference/8.7/search-aggregations-bucket-datehistogram-aggregation.html
+``` javascript
+GET orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_at_date_histogram": {
+      "date_histogram": {
+        "field": "purchased_at",
+        "format": "dd/MM/yyyy HH:ss:mm", 
+        "calendar_interval": "quarter",
+        //"fixed_interval": "30d",
+        "keyed": true,
+        "missing": "01/01/2000 00:00:00"
       },
       "aggs": {
         "total_amount_stats": {
