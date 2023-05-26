@@ -38,3 +38,5 @@ services:
   #   image: curlimages/curl:8.00.1
   #   container_name: curl
   #   command: tail -F anyFile
+  #   volumes:
+  #     - ./ndjson:/data/ndjson
