@@ -1,0 +1,2 @@
+{"name":"ABCD", "age": 20, "hobbies":["running","swimming"], "address":{"street":"123", "city":"NY"}}
+{"name":"XYZ", "age": 30, "hobbies":["running","swimming"], "address":{"street":"123", "city":"NY"}}

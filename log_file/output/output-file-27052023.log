@@ -1,0 +1,1 @@
+{"name":"ABCD","hobbies":"running||swimming","@timestamp":"2023-05-27T15:32:11.187997248Z","log":{"file":{"path":"/usr/share/logs/input/input-20230527.log"}},"host":{"name":"93ea3c15c335"},"age":"24","address":{"city":"NY","street":"456"},"event":{},"type":"file"}

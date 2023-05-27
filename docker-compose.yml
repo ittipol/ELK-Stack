@@ -30,9 +30,11 @@ services:
       - 8080:8080
     volumes:
       - ./data/logstash:/usr/share/logstash/data
-      - ./config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./config/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
-      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./log_file/input:/usr/share/logs/input
+      - ./log_file/output:/usr/share/logs/output
     
   # curl:
   #   image: curlimages/curl:8.00.1

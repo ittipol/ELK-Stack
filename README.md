@@ -109,7 +109,7 @@ PUT logs
 ```
 
 ``` javascript
-// Create index
+// Create index (Nested property)
 PUT activity
 {
   "mappings": {
@@ -1165,7 +1165,23 @@ POST _analyze
 ## Logstash pipeline
 
 ### Input
+- [Input plugins](https://www.elastic.co/guide/en/logstash/8.7/input-plugins.html)
 ``` javascript
+// standard input
+input {
+  stdin {
+    
+  }
+}
+
+// http
+input {
+  http {
+    port => 8080
+  }
+}
+
+// file
 input {
   http {
     port => 8080
@@ -1174,14 +1190,23 @@ input {
 ```
 
 ### Filter
+- [Filter plugins](https://www.elastic.co/guide/en/logstash/8.7/filter-plugins.html)
+- [Mutate filter plugin](https://www.elastic.co/guide/en/logstash/8.7/plugins-filters-mutate.html)
 ``` javascript
 
 ```
 
 ### Output
+- [Output plugins](https://www.elastic.co/guide/en/logstash/8.7/output-plugins.html)
 ``` javascript
+// standard output (output to console)
+output {
+  stdout {
 
+  }
+}
 ```
 
 VSCode Extensions
+- Elasticsearch for VSCode (Use with .es file for querying Elasticsearch)
 - Logstash Editor
