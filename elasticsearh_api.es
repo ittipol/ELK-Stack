@@ -21,3 +21,9 @@ GET orders/_search
     }
   }
 }
+
+GET _cat/indices
+
+GET log_access_20170920/_search
+
+GET log_error_20230528/_search

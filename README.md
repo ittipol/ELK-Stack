@@ -1193,16 +1193,63 @@ input {
 - [Filter plugins](https://www.elastic.co/guide/en/logstash/8.7/filter-plugins.html)
 - [Mutate filter plugin](https://www.elastic.co/guide/en/logstash/8.7/plugins-filters-mutate.html)
 ``` javascript
+filter {
+  mutate {
+    convert => {
+      "age" => "integer" # Convert type age to integer
+      "[address][street]" => "string" # Convert a nested field name street to string
+    }
 
+    join => {
+      "hobbies" => "||" # join array
+    }
+
+    remove_field => ["@version", "[event][original]"] # [event][original] mean Remove a nested field
+  }
+}
+```
+
+### Grok filter plugin
+- [Grok filter plugin](https://www.elastic.co/guide/en/logstash/8.7/plugins-filters-grok.html)
+- SYNTAX, Logstash ships with about 120 patterns by default. You can find them here: https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns
+``` javascript
+// pattern %{SYNTAX:SEMANTIC:TYPE}
+// TYPE is optional
+// e.g. %{IP:ip}
+// e.g. %{INT:http_status:int}
+
+filter {
+    grok {
+        match => {
+            "message" => "%{IP:ip} - %{USER:user} \[%{HTTPDATE:date}\] \"%{WORD:method} %{URIPATHPARAM:request}"
+        }
+    }
+}
 ```
 
 ### Output
 - [Output plugins](https://www.elastic.co/guide/en/logstash/8.7/output-plugins.html)
+- [Elasticsearch output plugin](https://www.elastic.co/guide/en/logstash/8.7/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch)
 ``` javascript
 // standard output (output to console)
 output {
   stdout {
 
+  }
+}
+
+// file
+output {
+  file {
+    path => "/usr/share/logs/output/output-%{type}-%{+ddMMyyyy}.log"
+  }
+}
+
+// elasticsearch
+output {
+  elasticsearch {
+    hosts => ["http://elasticsearch:9200"]
+    index => "log_%{type}_%{+yyyyMMdd}"
   }
 }
 ```

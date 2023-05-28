@@ -28,11 +28,13 @@ services:
       - config.reload.automatic=true
     ports:
       - 8080:8080
+      - 8081:8081
     volumes:
       - ./data/logstash:/usr/share/logstash/data
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
       - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/pattern:/usr/share/logstash/pattern
       - ./log_file/input:/usr/share/logs/input
       - ./log_file/output:/usr/share/logs/output
     

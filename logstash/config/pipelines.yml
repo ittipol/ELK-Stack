@@ -3,3 +3,6 @@
 
 - pipeline.id: apache
   path.config: "/usr/share/logstash/pipeline/apache_logstash.conf"
+
+- pipeline.id: pattern
+  path.config: "/usr/share/logstash/pipeline/pattern_logstash.conf"

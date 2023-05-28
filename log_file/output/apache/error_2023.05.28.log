@@ -1,0 +1,1 @@
+{"message":"Hello","@version":"1","url":{"domain":"localhost","path":"/error","port":8081},"user_agent":{"original":"curl/7.64.1"},"http":{"version":"HTTP/1.1","method":"POST","request":{"body":{"bytes":"5"},"mime_type":"application/x-www-form-urlencoded"}},"event":{"original":"Hello"},"host":{"ip":"172.21.0.1"},"type":"error","@timestamp":"2023-05-28T17:55:21.736687794Z"}
