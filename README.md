@@ -1164,6 +1164,14 @@ POST _analyze
 
 ## Logstash pipeline
 
+### Create new pipeline
+1. Add new *logstash.conf in ./logstash/pipeline
+2. Add *logstash.conf file to pipeline.yml
+```
+- pipeline.id: {pipeline name}
+  path.config: "/usr/share/logstash/pipeline/*logstash.conf"
+```
+
 ### Input
 - [Input plugins](https://www.elastic.co/guide/en/logstash/8.7/input-plugins.html)
 ``` javascript
@@ -1257,3 +1265,9 @@ output {
 VSCode Extensions
 - Elasticsearch for VSCode (Use with .es file for querying Elasticsearch)
 - Logstash Editor
+
+## Test
+
+Elasticsearch http://localhost:9200<br>
+Kibana http://localhost:5601<br>
+Logstash http://localhost:8080 (main pipeline), http://localhost:8081 (apache pipeline)<br>
