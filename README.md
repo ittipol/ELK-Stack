@@ -13,13 +13,13 @@
 discovery.type=single-node
 ```
 
-## Kibana
-- Download images https://www.docker.elastic.co/r/kibana
-- Configure settings https://www.elastic.co/guide/en/kibana/current/settings.html
-
 ## Logstash
 - Download images https://www.docker.elastic.co/r/logstash
 - Configure settings https://www.elastic.co/guide/en/logstash/current/index.html
+
+## Kibana
+- Download images https://www.docker.elastic.co/r/kibana
+- Configure settings https://www.elastic.co/guide/en/kibana/current/settings.html
 
 ## Kibana Dev Tools
 http://localhost:5601/app/dev_tools#/console
@@ -1262,12 +1262,25 @@ output {
 }
 ```
 
-VSCode Extensions
+## Kibana
+- [Create a data view](https://www.elastic.co/guide/en/kibana/8.7/data-views.html)
+
+### Index Management
+- Go to menu Stack Management > Index Management
+
+### Create Data Views
+1. Go to menu Stack Management > Data Views
+2. Click "Create data view" button
+3. Input name, index pattern, timestamp field
+4. Click "Save data view to Kibana" button
+5. Create data view complete
+
+## VSCode Extensions
 - Elasticsearch for VSCode (Use with .es file for querying Elasticsearch)
 - Logstash Editor
 
 ## Test
 
-Elasticsearch http://localhost:9200<br>
-Kibana http://localhost:5601<br>
-Logstash http://localhost:8080 (main pipeline), http://localhost:8081 (apache pipeline)<br>
+- Elasticsearch http://localhost:9200<br>
+- Logstash http://localhost:8080 (main pipeline), http://localhost:8081 (apache pipeline)<br>
+- Kibana http://localhost:5601<br>

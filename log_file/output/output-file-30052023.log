@@ -1,0 +1,2 @@
+{"name":"ABCD","log":{"file":{"path":"/usr/share/logs/input/input-20230527.log"}},"hobbies":"running||swimming","type":"file","host":{"name":"863ba1aa0373"},"address":{"city":"NY","street":"456"},"age":"24","@timestamp":"2023-05-30T14:09:52.102165593Z","event":{}}
+{"name":"ABCD","log":{"file":{"path":"/usr/share/logs/input/input-20230527.log"}},"hobbies":"running||swimming","type":"file","host":{"name":"863ba1aa0373"},"address":{"city":"NY","street":"456"},"age":"24","@timestamp":"2023-05-30T14:09:52.108590411Z","event":{}}

@@ -12,6 +12,8 @@ services:
       - 9300:9300
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - elastic
 
   kibana:
     container_name: kibana
@@ -20,6 +22,8 @@ services:
       - elasticsearch.hosts=http://elasticsearch:9200
     ports:
       - 5601:5601
+    networks:
+      - elastic  
 
   logstash:
     container_name: logstash
@@ -37,6 +41,8 @@ services:
       - ./logstash/pattern:/usr/share/logstash/pattern
       - ./log_file/input:/usr/share/logs/input
       - ./log_file/output:/usr/share/logs/output
+    networks:
+      - elastic
     
   # curl:
   #   image: curlimages/curl:8.00.1
@@ -44,3 +50,8 @@ services:
   #   command: tail -F anyFile
   #   volumes:
   #     - ./ndjson:/data/ndjson
+  #   networks:
+  #     - elastic
+networks:
+  elastic:
+    driver: bridge
